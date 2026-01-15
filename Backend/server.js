@@ -15,7 +15,7 @@ app.use(cors({
     origin: [
         "http://localhost:5173",
         // Replace this with your ACTUAL Frontend Vercel URL (no slash at end)
-        "https://fin-flow-smart-finance-tracking-web-nine.vercel.app" 
+        "https://fin-flow-five.vercel.app" 
     ],
     credentials: true
 }));
