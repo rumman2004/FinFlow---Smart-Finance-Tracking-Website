@@ -1,2 +1,2 @@
 // Automatically switches between Localhost and Vercel URL
-export const API_URL = import.meta.env.MODE === "production" ? "http://localhost:5000" : "https://fin-flow-smart-finance-tracking-web.vercel.app/api";
+export const API_URL = import.meta.env.MODE === "development" ? "http://localhost:5000" : "https://fin-flow-smart-finance-tracking-web.vercel.app/api";
