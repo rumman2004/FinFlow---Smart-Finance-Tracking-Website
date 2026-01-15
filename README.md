@@ -1,7 +1,6 @@
 # FinFlow - Smart Finance Tracking Website
 
-![FinFlow Dashboard Preview]([https://res.cloudinary.com/dtbytfxzs/image/upload/v1768507918/Fin-Flow_beipcu.png])
-*(Replace the image link above with a real screenshot of your dashboard once hosted)*
+![FinFlow Dashboard Preview](https://res.cloudinary.com/dtbytfxzs/image/upload/Fin-Flow_beipcu.png)
 
 **FinFlow** is a robust, full-stack MERN finance tracker designed to help users track, analyze, and optimize their wealth. Unlike standard expense trackers, FinFlow introduces **"Smart Logic"** for handling financial movements—automatically recategorizing funds as they move between Investments, Savings, and Expenses to ensure accurate net-worth tracking.
 
