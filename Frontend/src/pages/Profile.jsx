@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import AuthContext from '../context/AuthContext';
 import { User, Mail, Shield } from 'lucide-react';
 
+
 const Profile = () => {
     const { user, logout } = useContext(AuthContext);
 
