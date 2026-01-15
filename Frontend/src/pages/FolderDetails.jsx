@@ -31,8 +31,8 @@ const FolderDetails = () => {
     const fetchFolderData = async () => {
         try {
             const [txRes, historyRes] = await Promise.all([
-                axios.get(`http://localhost:5000/api/transactions?folderId=${id}`, { headers: { Authorization: `Bearer ${token}` } }),
-                axios.get(`http://localhost:5000/api/transactions/history/${id}`, { headers: { Authorization: `Bearer ${token}` } })
+                axios.get(`${API_URL}/api/transactions?folderId=${id}`, { headers: { Authorization: `Bearer ${token}` } }),
+                axios.get(`${API_URL}/api/transactions/history/${id}`, { headers: { Authorization: `Bearer ${token}` } })
             ]);
             setTransactions(txRes.data);
             setHistory(historyRes.data);
@@ -43,14 +43,14 @@ const FolderDetails = () => {
     // --- ACTIONS ---
     const handleDelete = async (txId) => {
         if(!window.confirm("Delete transaction? This action will be logged.")) return;
-        await axios.delete(`http://localhost:5000/api/transactions/${txId}`, { headers: { Authorization: `Bearer ${token}` } });
+        await axios.delete(`${API_URL}/api/transactions/${txId}`, { headers: { Authorization: `Bearer ${token}` } });
         fetchFolderData();
     };
 
     const handleUpdate = async (e) => {
         e.preventDefault();
         try {
-            await axios.put(`http://localhost:5000/api/transactions/${editTx._id}`, {
+            await axios.put(`${API_URL}/api/transactions/${editTx._id}`, {
                 amount: Number(editTx.amount),
                 description: editTx.description,
                 type: editTx.type,
@@ -74,7 +74,7 @@ const FolderDetails = () => {
         }
 
         try {
-            await axios.post('http://localhost:5000/api/transactions/withdraw', {
+            await axios.post('${API_URL}/api/transactions/withdraw', {
                 id: withdrawTx._id,
                 amount: amount
             }, { headers: { Authorization: `Bearer ${token}` } });

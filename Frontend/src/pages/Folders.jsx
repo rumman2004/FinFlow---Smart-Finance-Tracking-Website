@@ -14,20 +14,20 @@ const Folders = () => {
     useEffect(() => { fetchFolders(); }, []);
 
     const fetchFolders = async () => {
-        const { data } = await axios.get('http://localhost:5000/api/folders', { headers: { Authorization: `Bearer ${token}` } });
+        const { data } = await axios.get('${API_URL}/api/folders', { headers: { Authorization: `Bearer ${token}` } });
         setFolders(data);
     };
 
     const handleCreateFolder = async (e) => {
         e.preventDefault();
-        await axios.post('http://localhost:5000/api/folders', { name: newFolderName }, { headers: { Authorization: `Bearer ${token}` } });
+        await axios.post('${API_URL}/api/folders', { name: newFolderName }, { headers: { Authorization: `Bearer ${token}` } });
         setShowModal(false); setNewFolderName(''); fetchFolders();
     };
 
     const handleDelete = async (e, id) => {
         e.stopPropagation(); // Prevent navigation when clicking delete
         if(!window.confirm("Delete folder?")) return;
-        await axios.delete(`http://localhost:5000/api/folders/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+        await axios.delete(`${API_URL}/api/folders/${id}`, { headers: { Authorization: `Bearer ${token}` } });
         fetchFolders();
     };
 
