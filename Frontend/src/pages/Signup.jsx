@@ -2,7 +2,7 @@ import React, { useState, useContext } from 'react';
 import axios from 'axios';
 import AuthContext from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { API_URL } from '../../config'; // Import the config
+import { API_URL } from '../config'; // Import the config
 
 const Signup = () => {
     const [name, setName] = useState('');

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import AuthContext from '../context/AuthContext';
-import { API_URL } from '../../config';
+import { API_URL } from '../config';
 import { Wallet, Plus, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 

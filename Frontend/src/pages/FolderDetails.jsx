@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { API_URL } from '../../config';
+import { API_URL } from '../config';
 import AuthContext from '../context/AuthContext';
 import { 
     ArrowLeft, Trash2, Edit3, Download, ArrowDownRight, ArrowUpRight, Activity, Wallet, X, FileText, Clock 
