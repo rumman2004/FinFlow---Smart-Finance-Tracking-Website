@@ -10,15 +10,23 @@ const app = express();
 
 app.use(express.json());
 
-// FIX: Remove the trailing slash from the Vercel URL
+// --- FIXED CORS SECTION ---
 app.use(cors({
-    origin: [
-        "http://localhost:5173",
-        // Replace this with your ACTUAL Frontend Vercel URL (no slash at end)
-        "https://fin-flow-five.vercel.app" 
-    ],
+    origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        
+        // Allow Localhost AND any Vercel URL (ends with .vercel.app)
+        if (origin.startsWith('http://localhost') || origin.endsWith('.vercel.app')) {
+            return callback(null, true);
+        }
+        
+        // Block anything else
+        return callback(new Error('Not allowed by CORS'));
+    },
     credentials: true
 }));
+// --------------------------
 
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/folders', require('./routes/folderRoutes'));
@@ -26,7 +34,7 @@ app.use('/api/transactions', require('./routes/transactionRoutes'));
 
 const PORT = process.env.PORT || 5000;
 
-// Export app for Vercel
+// Export app for Vercel (CRITICAL: Do not remove)
 module.exports = app;
 
 if (require.main === module) {
