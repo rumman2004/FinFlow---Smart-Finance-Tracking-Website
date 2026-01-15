@@ -1,0 +1,2 @@
+// Automatically switches between Localhost and Vercel URL
+export const API_URL = import.meta.env.MODE === "production" ? "http://localhost:5000" : "";
