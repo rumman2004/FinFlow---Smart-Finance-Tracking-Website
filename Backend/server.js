@@ -11,7 +11,7 @@ const app = express();
 // Middleware
 app.use(express.json());
 app.use(cors({
-    origin: ["http://localhost:5173", "https://finflow-frontend.vercel.app"], // Add your Vercel URL here
+    origin: ["http://localhost:5173", "https://fin-flow-smart-finance-tracking-web-nine.vercel.app/"], // Add your Vercel URL here
     credentials: true
 }));
 
