@@ -22,7 +22,7 @@ const FolderDetails = () => {
 
     // Modal States
     const [editTx, setEditTx] = useState(null); 
-    const [withdrawTx, setWithdrawTx] = useState(null); // Tx being withdrawn from
+    const [withdrawTx, setWithdrawTx] = useState(null);
     const [withdrawAmount, setWithdrawAmount] = useState('');
 
     useEffect(() => {
@@ -31,21 +31,30 @@ const FolderDetails = () => {
 
     const fetchFolderData = async () => {
         try {
+            const config = { headers: { Authorization: `Bearer ${token}` } };
             const [txRes, historyRes] = await Promise.all([
-                axios.get(`${API_URL}/api/transactions?folderId=${id}`, { headers: { Authorization: `Bearer ${token}` } }),
-                axios.get(`${API_URL}/api/transactions/history/${id}`, { headers: { Authorization: `Bearer ${token}` } })
+                axios.get(`${API_URL}/api/transactions?folderId=${id}`, config),
+                axios.get(`${API_URL}/api/transactions/history/${id}`, config)
             ]);
             setTransactions(txRes.data);
             setHistory(historyRes.data);
             setLoading(false);
-        } catch (error) { console.error(error); setLoading(false); }
+        } catch (error) { 
+            console.error(error); 
+            setLoading(false); 
+        }
     };
 
-    // --- ACTIONS ---
     const handleDelete = async (txId) => {
         if(!window.confirm("Delete transaction? This action will be logged.")) return;
-        await axios.delete(`${API_URL}/api/transactions/${txId}`, { headers: { Authorization: `Bearer ${token}` } });
-        fetchFolderData();
+        try {
+            await axios.delete(`${API_URL}/api/transactions/${txId}`, { 
+                headers: { Authorization: `Bearer ${token}` } 
+            });
+            fetchFolderData();
+        } catch (error) {
+            alert('Error deleting transaction');
+        }
     };
 
     const handleUpdate = async (e) => {
@@ -60,10 +69,11 @@ const FolderDetails = () => {
             }, { headers: { Authorization: `Bearer ${token}` } });
             setEditTx(null);
             fetchFolderData();
-        } catch (error) { alert("Update failed"); }
+        } catch (error) { 
+            alert("Update failed"); 
+        }
     };
 
-    // NEW: Smart Withdraw Handler
     const handleSmartWithdraw = async (e) => {
         e.preventDefault();
         if (!withdrawTx) return;
@@ -101,12 +111,20 @@ const FolderDetails = () => {
 
     return (
         <div className="w-full animate-fade-in">
-            <button onClick={() => navigate('/folders')} className="flex items-center gap-2 text-text-secondary hover:text-blue-500 mb-6 transition-colors"><ArrowLeft size={18} /> Back to Folders</button>
+            <button 
+                onClick={() => navigate('/folders')} 
+                className="flex items-center gap-2 text-text-secondary hover:text-blue-500 mb-6 transition-colors"
+            >
+                <ArrowLeft size={18} /> Back to Folders
+            </button>
 
             <div className="flex flex-col lg:flex-row gap-8 mb-8">
                 {/* Left Info */}
                 <div className="lg:w-1/3 space-y-6">
-                    <div><h2 className="text-3xl font-bold text-text-primary">{state?.folderName || 'Folder Details'}</h2><p className="text-text-secondary">{transactions.length} records found</p></div>
+                    <div>
+                        <h2 className="text-3xl font-bold text-text-primary">{state?.folderName || 'Folder Details'}</h2>
+                        <p className="text-text-secondary">{transactions.length} records found</p>
+                    </div>
                     <div className="bg-bg-secondary p-4 rounded-2xl border border-border h-64 shadow-sm">
                         <h4 className="text-sm font-bold text-text-primary mb-2">Distribution</h4>
                         {chartData.length > 0 ? (
@@ -125,44 +143,61 @@ const FolderDetails = () => {
 
                 {/* Right Lists */}
                 <div className="lg:w-2/3 bg-bg-secondary rounded-2xl border border-border shadow-sm overflow-hidden flex flex-col h-[600px]">
-                     <div className="flex border-b border-border">
-                        <button onClick={() => setActiveTab('transactions')} className={`flex-1 p-4 font-bold text-sm flex items-center justify-center gap-2 transition-colors ${activeTab === 'transactions' ? 'text-blue-500 border-b-2 border-blue-500 bg-blue-500/5' : 'text-text-secondary hover:text-text-primary'}`}>
+                    <div className="flex border-b border-border">
+                        <button 
+                            onClick={() => setActiveTab('transactions')} 
+                            className={`flex-1 p-4 font-bold text-sm flex items-center justify-center gap-2 transition-colors ${activeTab === 'transactions' ? 'text-blue-500 border-b-2 border-blue-500 bg-blue-500/5' : 'text-text-secondary hover:text-text-primary'}`}
+                        >
                             <FileText size={16} /> Transactions
                         </button>
-                        <button onClick={() => setActiveTab('history')} className={`flex-1 p-4 font-bold text-sm flex items-center justify-center gap-2 transition-colors ${activeTab === 'history' ? 'text-blue-500 border-b-2 border-blue-500 bg-blue-500/5' : 'text-text-secondary hover:text-text-primary'}`}>
+                        <button 
+                            onClick={() => setActiveTab('history')} 
+                            className={`flex-1 p-4 font-bold text-sm flex items-center justify-center gap-2 transition-colors ${activeTab === 'history' ? 'text-blue-500 border-b-2 border-blue-500 bg-blue-500/5' : 'text-text-secondary hover:text-text-primary'}`}
+                        >
                             <Clock size={16} /> History Log
                         </button>
-                     </div>
+                    </div>
 
-                     <div className="overflow-y-auto flex-1 custom-scrollbar p-2">
+                    <div className="overflow-y-auto flex-1 custom-scrollbar p-2">
                         {activeTab === 'transactions' && (
                             transactions.length === 0 ? <p className="text-center text-text-secondary mt-10">No transactions.</p> :
                             transactions.map((t) => (
-                                <div key={t._id} className="flex flex-col md:flex-row justify-between items-center p-4 border-b border-border last:border-0 hover:bg-bg-primary transition-colors group">
+                                <div key={t._id} className="flex flex-col md:flex-row justify-between items-start md:items-center p-4 border-b border-border last:border-0 hover:bg-bg-primary transition-colors group gap-3">
                                     <div className="flex items-center gap-4 w-full md:w-auto">
                                         <div className={`p-3 rounded-xl shrink-0 ${t.type === 'income' ? 'bg-emerald-500/10 text-emerald-500' : t.type === 'expense' ? 'bg-red-500/10 text-red-500' : t.type === 'savings' ? 'bg-amber-500/10 text-amber-500' : 'bg-violet-500/10 text-violet-500'}`}>
                                             {t.type === 'income' ? <ArrowDownRight size={20} /> : t.type === 'expense' ? <ArrowUpRight size={20} /> : t.type === 'savings' ? <Wallet size={20} /> : <Activity size={20} />}
                                         </div>
-                                        <div>
-                                            <p className="text-text-primary font-bold">{t.description}</p>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-text-primary font-bold truncate">{t.description}</p>
                                             <p className="text-xs text-text-secondary">{new Date(t.date).toLocaleDateString()} • {t.type.toUpperCase()}</p>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-4 mt-3 md:mt-0">
+                                    <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
                                         <span className={`font-bold text-lg ${t.type === 'income' || t.type === 'savings' ? 'text-emerald-500' : 'text-text-primary'}`}>${t.amount.toLocaleString()}</span>
-                                        <div className="flex gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
-                                            {/* Show Withdraw button for Investment, Savings, and Income */}
+                                        <div className="flex gap-1">
                                             {['investment', 'savings', 'income'].includes(t.type) && (
                                                 <button 
                                                     onClick={() => { setWithdrawTx(t); setWithdrawAmount(''); }} 
                                                     title="Withdraw/Transfer" 
-                                                    className="p-2 text-text-secondary hover:text-emerald-500 hover:bg-emerald-500/10 rounded-lg"
+                                                    className="p-2 text-text-secondary hover:text-emerald-500 hover:bg-emerald-500/10 rounded-lg transition-colors"
                                                 >
                                                     <Download size={18} />
                                                 </button>
                                             )}
-                                            <button onClick={() => setEditTx(t)} title="Edit" className="p-2 text-text-secondary hover:text-blue-500 hover:bg-blue-500/10 rounded-lg"><Edit3 size={18} /></button>
-                                            <button onClick={() => handleDelete(t._id)} title="Delete" className="p-2 text-text-secondary hover:text-red-500 hover:bg-red-500/10 rounded-lg"><Trash2 size={18} /></button>
+                                            <button 
+                                                onClick={() => setEditTx(t)} 
+                                                title="Edit" 
+                                                className="p-2 text-text-secondary hover:text-blue-500 hover:bg-blue-500/10 rounded-lg transition-colors"
+                                            >
+                                                <Edit3 size={18} />
+                                            </button>
+                                            <button 
+                                                onClick={() => handleDelete(t._id)} 
+                                                title="Delete" 
+                                                className="p-2 text-text-secondary hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -170,27 +205,28 @@ const FolderDetails = () => {
                         )}
 
                         {activeTab === 'history' && (
+                            history.length === 0 ? <p className="text-center text-text-secondary mt-10">No history logs.</p> :
                             history.map((log) => (
                                 <div key={log._id} className="flex gap-4 p-4 border-b border-border last:border-0 hover:bg-bg-primary transition-colors">
-                                    <div className={`p-2 h-fit rounded-full mt-1 ${log.action === 'CREATE' ? 'bg-emerald-500/10 text-emerald-500' : log.action === 'DELETE' ? 'bg-red-500/10 text-red-500' : log.action === 'EDIT' ? 'bg-blue-500/10 text-blue-500' : 'bg-amber-500/10 text-amber-500'}`}>
+                                    <div className={`p-2 h-fit rounded-full mt-1 shrink-0 ${log.action === 'CREATE' ? 'bg-emerald-500/10 text-emerald-500' : log.action === 'DELETE' ? 'bg-red-500/10 text-red-500' : log.action === 'EDIT' ? 'bg-blue-500/10 text-blue-500' : 'bg-amber-500/10 text-amber-500'}`}>
                                         {log.action === 'CREATE' ? <ArrowDownRight size={16} /> : log.action === 'DELETE' ? <Trash2 size={16} /> : log.action === 'EDIT' ? <Edit3 size={16} /> : <Download size={16} />}
                                     </div>
-                                    <div>
-                                        <p className="text-text-primary text-sm font-medium">{log.description}</p>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-text-primary text-sm font-medium break-words">{log.description}</p>
                                         <p className="text-xs text-text-secondary mt-1">{new Date(log.createdAt).toLocaleString()} • <span className="font-bold opacity-75">{log.action}</span></p>
                                     </div>
                                 </div>
                             ))
                         )}
-                     </div>
+                    </div>
                 </div>
             </div>
 
             {/* WITHDRAW MODAL */}
             {withdrawTx && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-bg-secondary p-8 rounded-2xl w-full max-w-sm border border-border shadow-2xl relative animate-fade-in">
-                        <button onClick={() => setWithdrawTx(null)} className="absolute top-4 right-4 text-text-secondary hover:text-text-primary"><X size={20} /></button>
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+                    <div className="bg-bg-secondary p-8 rounded-2xl w-full max-w-sm border border-border shadow-2xl relative">
+                        <button onClick={() => setWithdrawTx(null)} className="absolute top-4 right-4 text-text-secondary hover:text-text-primary transition-colors"><X size={20} /></button>
                         <h3 className="text-xl font-bold text-text-primary mb-2">Withdraw / Transfer</h3>
                         <p className="text-text-secondary text-sm mb-6">
                             From: <span className="font-bold text-text-primary">{withdrawTx.description}</span><br/>
@@ -201,7 +237,12 @@ const FolderDetails = () => {
                             <div>
                                 <label className="text-xs text-text-secondary ml-1 mb-1 block">Amount to Withdraw</label>
                                 <input 
-                                    type="number" required autoFocus
+                                    type="number" 
+                                    required 
+                                    autoFocus
+                                    step="0.01"
+                                    min="0.01"
+                                    max={withdrawTx.amount}
                                     className="w-full bg-bg-primary text-text-primary p-3 rounded-xl border border-border outline-none focus:border-blue-500 font-bold text-lg" 
                                     placeholder="0.00"
                                     value={withdrawAmount} 
@@ -210,12 +251,12 @@ const FolderDetails = () => {
                             </div>
                             
                             <div className="text-xs text-text-secondary bg-bg-primary p-3 rounded-lg border border-border">
-                                {withdrawTx.type === 'investment' && "Money will move to Savings."}
-                                {withdrawTx.type === 'savings' && "Money will be recorded as an Expense."}
-                                {withdrawTx.type === 'income' && "Money will move to Savings."}
+                                {withdrawTx.type === 'investment' && "💰 Money will move to Savings."}
+                                {withdrawTx.type === 'savings' && "🛒 Money will be recorded as an Expense."}
+                                {withdrawTx.type === 'income' && "💵 Money will move to Savings."}
                             </div>
 
-                            <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-bold mt-2 shadow-lg shadow-emerald-500/20">
+                            <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-bold mt-2 shadow-lg shadow-emerald-500/20 transition-all active:scale-95">
                                 Confirm Withdrawal
                             </button>
                         </form>
@@ -223,25 +264,54 @@ const FolderDetails = () => {
                 </div>
             )}
 
-            {/* EDIT MODAL (Unchanged) */}
+            {/* EDIT MODAL */}
             {editTx && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
                     <div className="bg-bg-secondary p-8 rounded-2xl w-full max-w-md border border-border shadow-2xl relative">
-                        <button onClick={() => setEditTx(null)} className="absolute top-4 right-4 text-text-secondary hover:text-text-primary"><X size={20} /></button>
+                        <button onClick={() => setEditTx(null)} className="absolute top-4 right-4 text-text-secondary hover:text-text-primary transition-colors"><X size={20} /></button>
                         <h3 className="text-2xl font-bold text-text-primary mb-6">Edit Transaction</h3>
                         <form onSubmit={handleUpdate} className="space-y-4">
-                            <input type="text" required className="w-full bg-bg-primary text-text-primary p-3 rounded-xl border border-border outline-none focus:border-blue-500" value={editTx.description} onChange={(e) => setEditTx({...editTx, description: e.target.value})} />
+                            <input 
+                                type="text" 
+                                required 
+                                className="w-full bg-bg-primary text-text-primary p-3 rounded-xl border border-border outline-none focus:border-blue-500" 
+                                value={editTx.description} 
+                                onChange={(e) => setEditTx({...editTx, description: e.target.value})} 
+                            />
                             <div className="grid grid-cols-2 gap-4">
-                                <input type="number" required className="w-full bg-bg-primary text-text-primary p-3 rounded-xl border border-border outline-none focus:border-blue-500" value={editTx.amount} onChange={(e) => setEditTx({...editTx, amount: e.target.value})} />
-                                <select className="w-full bg-bg-primary text-text-primary p-3 rounded-xl border border-border outline-none focus:border-blue-500" value={editTx.type} onChange={(e) => setEditTx({...editTx, type: e.target.value})}>
-                                    <option value="expense">Expense</option><option value="income">Income</option><option value="savings">Savings</option><option value="investment">Investment</option>
+                                <input 
+                                    type="number" 
+                                    required 
+                                    step="0.01"
+                                    min="0.01"
+                                    className="w-full bg-bg-primary text-text-primary p-3 rounded-xl border border-border outline-none focus:border-blue-500" 
+                                    value={editTx.amount} 
+                                    onChange={(e) => setEditTx({...editTx, amount: e.target.value})} 
+                                />
+                                <select 
+                                    className="w-full bg-bg-primary text-text-primary p-3 rounded-xl border border-border outline-none focus:border-blue-500" 
+                                    value={editTx.type} 
+                                    onChange={(e) => setEditTx({...editTx, type: e.target.value})}
+                                >
+                                    <option value="expense">Expense</option>
+                                    <option value="income">Income</option>
+                                    <option value="savings">Savings</option>
+                                    <option value="investment">Investment</option>
                                 </select>
                             </div>
                             <div>
                                 <label className="text-xs text-text-secondary ml-1 mb-1 block">Date</label>
-                                <input type="date" required className="w-full bg-bg-primary text-text-primary p-3 rounded-xl border border-border outline-none focus:border-blue-500" value={editTx.date ? new Date(editTx.date).toISOString().split('T')[0] : ''} onChange={(e) => setEditTx({...editTx, date: e.target.value})} />
+                                <input 
+                                    type="date" 
+                                    required 
+                                    className="w-full bg-bg-primary text-text-primary p-3 rounded-xl border border-border outline-none focus:border-blue-500" 
+                                    value={editTx.date ? new Date(editTx.date).toISOString().split('T')[0] : ''} 
+                                    onChange={(e) => setEditTx({...editTx, date: e.target.value})} 
+                                />
                             </div>
-                            <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold mt-4">Update</button>
+                            <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold mt-4 shadow-lg shadow-blue-500/20 transition-all active:scale-95">
+                                Update Transaction
+                            </button>
                         </form>
                     </div>
                 </div>
