@@ -1,3 +1,2 @@
-// This connects Vercel to your existing server.js
-const app = require('../server');
+const app = require('../server'); // Points to server.js in the parent folder
 module.exports = app;

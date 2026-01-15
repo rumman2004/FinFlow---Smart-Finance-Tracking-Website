@@ -3,6 +3,7 @@ import { Sun, Moon, Search, UserCircle, Menu } from 'lucide-react';
 import ThemeContext from '../context/ThemeContext';
 import AuthContext from '../context/AuthContext';
 import SearchContext from '../context/SearchContext';
+import { API_URL } from '../config';
 import { Link } from 'react-router-dom';
 
 const Navbar = ({ toggleSidebar, isMobile }) => {

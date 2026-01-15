@@ -1,6 +1,7 @@
 import React from 'react';
 import { LayoutDashboard, Wallet, TrendingUp, LogOut, ChevronLeft, ChevronRight, User } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import { API_URL } from '../config';
 
 const Sidebar = ({ isOpen, toggleSidebar, logout, isMobile }) => {
     const location = useLocation();
