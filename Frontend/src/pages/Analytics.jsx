@@ -25,8 +25,8 @@ const Analytics = () => {
             try {
                 const config = { headers: { Authorization: `Bearer ${token}` } };
                 const [txRes, historyRes] = await Promise.all([
-                    axios.get('${API_URL}/api/transactions', config),
-                    axios.get('${API_URL}/api/transactions/history', config)
+                    axios.get(`${API_URL}/api/transactions`, config),
+                    axios.get(`${API_URL}/api/transactions/history`, config)
                 ]);
                 
                 // Sort transactions by date for the Line Chart

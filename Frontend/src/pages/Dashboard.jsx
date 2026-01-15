@@ -47,8 +47,8 @@ const Dashboard = () => {
         try {
             const config = { headers: { Authorization: `Bearer ${token}` } };
             const [txRes, folderRes] = await Promise.all([
-                axios.get('${API_URL}/api/transactions', config),
-                axios.get('${API_URL}/api/folders', config)
+                axios.get(`${API_URL}/api/transactions`, config),
+                axios.get(`${API_URL}/api/folders`, config)
             ]);
             setTransactions(txRes.data);
             setFolders(folderRes.data);
@@ -63,7 +63,7 @@ const Dashboard = () => {
         e.preventDefault();
         try {
             const config = { headers: { Authorization: `Bearer ${token}` } };
-            await axios.post('${API_URL}/api/transactions', {
+            await axios.post(`${API_URL}/api/transactions`, {
                 amount: Number(amount),
                 description,
                 type,

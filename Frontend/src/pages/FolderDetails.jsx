@@ -74,7 +74,7 @@ const FolderDetails = () => {
         }
 
         try {
-            await axios.post('${API_URL}/api/transactions/withdraw', {
+            await axios.post(`${API_URL}/api/transactions/withdraw`, {
                 id: withdrawTx._id,
                 amount: amount
             }, { headers: { Authorization: `Bearer ${token}` } });
