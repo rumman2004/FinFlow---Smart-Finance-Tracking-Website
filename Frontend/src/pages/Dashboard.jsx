@@ -119,10 +119,11 @@ const Dashboard = () => {
                 });
                 return {
                     name: month,
-                    Income: monthlyTx.filter(t => t.type === 'income').reduce((a, t) => a + t.amount, 0),
-                    Expense: monthlyTx.filter(t => t.type === 'expense').reduce((a, t) => a + t.amount, 0),
-                    Savings: monthlyTx.filter(t => t.type === 'savings').reduce((a, t) => a + t.amount, 0),
-                    Investment: monthlyTx.filter(t => t.type === 'investment').reduce((a, t) => a + t.amount, 0), // Added
+                    // FIX: Wrap t.amount in Number() to prevent string concatenation
+                    Income: monthlyTx.filter(t => t.type === 'income').reduce((a, t) => a + Number(t.amount), 0),
+                    Expense: monthlyTx.filter(t => t.type === 'expense').reduce((a, t) => a + Number(t.amount), 0),
+                    Savings: monthlyTx.filter(t => t.type === 'savings').reduce((a, t) => a + Number(t.amount), 0),
+                    Investment: monthlyTx.filter(t => t.type === 'investment').reduce((a, t) => a + Number(t.amount), 0),
                 };
             });
         } else {
@@ -134,10 +135,11 @@ const Dashboard = () => {
                 });
                 data.push({
                     name: i.toString(),
-                    Income: dailyTx.filter(t => t.type === 'income').reduce((a, t) => a + t.amount, 0),
-                    Expense: dailyTx.filter(t => t.type === 'expense').reduce((a, t) => a + t.amount, 0),
-                    Savings: dailyTx.filter(t => t.type === 'savings').reduce((a, t) => a + t.amount, 0),
-                    Investment: dailyTx.filter(t => t.type === 'investment').reduce((a, t) => a + t.amount, 0), // Added
+                    // FIX: Wrap t.amount in Number() here too
+                    Income: dailyTx.filter(t => t.type === 'income').reduce((a, t) => a + Number(t.amount), 0),
+                    Expense: dailyTx.filter(t => t.type === 'expense').reduce((a, t) => a + Number(t.amount), 0),
+                    Savings: dailyTx.filter(t => t.type === 'savings').reduce((a, t) => a + Number(t.amount), 0),
+                    Investment: dailyTx.filter(t => t.type === 'investment').reduce((a, t) => a + Number(t.amount), 0),
                 });
             }
         }
