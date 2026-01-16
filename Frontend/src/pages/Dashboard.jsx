@@ -87,7 +87,7 @@ const Dashboard = () => {
     const totalExpense = transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
     const totalInvestment = transactions.filter(t => t.type === 'investment').reduce((acc, t) => acc + t.amount, 0);
     const totalSavings = transactions.filter(t => t.type === 'savings').reduce((acc, t) => acc + t.amount, 0);
-    const totalBalance = totalIncome - totalExpense + totalSavings;
+    const totalBalance = totalIncome - totalExpense + totalSavings + totalInvestment;
 
     // --- DYNAMIC VIEW CALCULATIONS ---
     const getFilteredTransactions = () => {
