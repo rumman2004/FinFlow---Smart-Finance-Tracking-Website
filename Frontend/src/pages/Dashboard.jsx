@@ -215,10 +215,13 @@ const Dashboard = () => {
                                 interval={chartView === 'monthly' ? getAxisInterval() : 0} 
                             />
                             <YAxis 
+                                type="number" // <--- CRITICAL FIX: Forces numerical scale
+                                domain={['auto', 'auto']} // Ensures the chart scales to fit the biggest bar (250,000)
                                 axisLine={false} 
                                 tickLine={false} 
                                 tick={{ fill: 'var(--text-secondary)', fontSize: getAxisFontSize() }} 
-                                width={40} 
+                                width={45} // Increased slightly to fit larger numbers like "250k"
+                                tickFormatter={(value) => `${value / 1000}k`} // Optional: Makes 250000 look like "250k" to save space
                             />
                             <Tooltip 
                                 cursor={{ fill: 'var(--bg-primary)', opacity: 0.5 }} 
