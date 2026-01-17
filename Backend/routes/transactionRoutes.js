@@ -55,16 +55,14 @@ router.get('/history', protect, async (req, res) => {
     }
 });
 
-// CREATE Transaction (Auto Log)
+// CREATE Transaction
 router.post('/', protect, async (req, res) => {
     try {
         const { folderId, type, amount, description, date } = req.body;
         
-        // Validation
         if (!folderId || !type || !amount || !description) {
             return res.status(400).json({ message: 'Missing required fields' });
         }
-
         if (amount <= 0) {
             return res.status(400).json({ message: 'Amount must be positive' });
         }
@@ -78,7 +76,6 @@ router.post('/', protect, async (req, res) => {
             date: date || Date.now()
         });
 
-        // LOGGING
         const actionType = description.toLowerCase().includes('withdrawal') ? 'WITHDRAW' : 'CREATE';
         await History.create({
             user: req.user.id,
@@ -96,24 +93,17 @@ router.post('/', protect, async (req, res) => {
     }
 });
 
-// UPDATE Transaction (Auto Log Differences)
+// UPDATE Transaction
 router.put('/:id', protect, async (req, res) => {
     try {
         const transaction = await Transaction.findById(req.params.id);
         
-        if (!transaction) {
-            return res.status(404).json({ message: 'Transaction not found' });
-        }
-        
-        if (transaction.user.toString() !== req.user.id) {
-            return res.status(401).json({ message: 'Not authorized' });
-        }
+        if (!transaction) return res.status(404).json({ message: 'Transaction not found' });
+        if (transaction.user.toString() !== req.user.id) return res.status(401).json({ message: 'Not authorized' });
 
-        // Capture old values for log
         const oldAmount = transaction.amount;
         const oldDesc = transaction.description;
 
-        // Update
         transaction.amount = req.body.amount || transaction.amount;
         transaction.description = req.body.description || transaction.description;
         transaction.type = req.body.type || transaction.type;
@@ -121,14 +111,9 @@ router.put('/:id', protect, async (req, res) => {
         
         await transaction.save();
 
-        // LOGGING
         let changes = [];
-        if (oldAmount !== transaction.amount) {
-            changes.push(`Amount: $${oldAmount} → $${transaction.amount}`);
-        }
-        if (oldDesc !== transaction.description) {
-            changes.push(`Desc: "${oldDesc}" → "${transaction.description}"`);
-        }
+        if (oldAmount !== transaction.amount) changes.push(`Amount: $${oldAmount} → $${transaction.amount}`);
+        if (oldDesc !== transaction.description) changes.push(`Desc: "${oldDesc}" → "${transaction.description}"`);
 
         if (changes.length > 0) {
             await History.create({
@@ -147,25 +132,16 @@ router.put('/:id', protect, async (req, res) => {
     }
 });
 
-// DELETE Transaction (Auto Log)
+// DELETE Transaction
 router.delete('/:id', protect, async (req, res) => {
     try {
         const transaction = await Transaction.findById(req.params.id);
-        
-        if (!transaction) {
-            return res.status(404).json({ message: 'Transaction not found' });
-        }
-        
-        if (transaction.user.toString() !== req.user.id) {
-            return res.status(401).json({ message: 'Not authorized' });
-        }
+        if (!transaction) return res.status(404).json({ message: 'Transaction not found' });
+        if (transaction.user.toString() !== req.user.id) return res.status(401).json({ message: 'Not authorized' });
 
-        // Store details before delete
         const { folder, amount, description } = transaction;
-
         await transaction.deleteOne();
 
-        // LOGGING
         await History.create({
             user: req.user.id,
             folder: folder,
@@ -181,29 +157,18 @@ router.delete('/:id', protect, async (req, res) => {
     }
 });
 
-// WITHDRAW/TRANSFER Transaction
+// WITHDRAW/TRANSFER Transaction (FIXED FOR EXTRA)
 router.post('/withdraw', protect, async (req, res) => {
     try {
         const { id, amount } = req.body;
 
-        // 1. Find the original transaction
         const originalTx = await Transaction.findById(id);
-        if (!originalTx) {
-            return res.status(404).json({ message: 'Transaction not found' });
-        }
-        if (originalTx.user.toString() !== req.user.id) {
-            return res.status(401).json({ message: 'Not authorized' });
-        }
+        if (!originalTx) return res.status(404).json({ message: 'Transaction not found' });
+        if (originalTx.user.toString() !== req.user.id) return res.status(401).json({ message: 'Not authorized' });
 
-        // 2. Validation
-        if (!amount || amount <= 0) {
-            return res.status(400).json({ message: 'Amount must be positive' });
-        }
-        if (amount > originalTx.amount) {
-            return res.status(400).json({ message: 'Insufficient funds in this transaction' });
-        }
+        if (!amount || amount <= 0) return res.status(400).json({ message: 'Amount must be positive' });
+        if (amount > originalTx.amount) return res.status(400).json({ message: 'Insufficient funds' });
 
-        // 3. Define Logic based on Type
         let newType = 'savings';
         let actionDesc = '';
 
@@ -216,16 +181,18 @@ router.post('/withdraw', protect, async (req, res) => {
         } else if (originalTx.type === 'income') {
             newType = 'savings';
             actionDesc = `Moved from Income: ${originalTx.description}`;
+        } else if (originalTx.type === 'extra') { 
+            // ADDED: Allow withdrawing from Extra
+            newType = 'savings';
+            actionDesc = `Moved from Extra: ${originalTx.description}`;
         } else {
             return res.status(400).json({ message: 'Cannot withdraw from this transaction type' });
         }
 
-        // 4. Update Original Transaction (Decrease Amount)
         const oldAmount = originalTx.amount;
         originalTx.amount -= amount;
         await originalTx.save();
 
-        // 5. Create New Transaction (The Withdrawal Result)
         const newTx = await Transaction.create({
             user: req.user.id,
             folder: originalTx.folder,
@@ -235,7 +202,6 @@ router.post('/withdraw', protect, async (req, res) => {
             date: new Date()
         });
 
-        // 6. Log to History
         await History.create({
             user: req.user.id,
             folder: originalTx.folder,
@@ -244,11 +210,7 @@ router.post('/withdraw', protect, async (req, res) => {
             originalDate: new Date()
         });
 
-        res.status(200).json({ 
-            original: originalTx, 
-            new: newTx,
-            message: 'Withdrawal successful' 
-        });
+        res.status(200).json({ original: originalTx, new: newTx, message: 'Withdrawal successful' });
 
     } catch (error) {
         console.error('Withdrawal error:', error);

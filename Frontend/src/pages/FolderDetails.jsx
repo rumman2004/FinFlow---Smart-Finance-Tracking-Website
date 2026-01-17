@@ -4,7 +4,7 @@ import axios from 'axios';
 import { API_URL } from '../config';
 import AuthContext from '../context/AuthContext';
 import { 
-    ArrowLeft, Trash2, Edit3, Download, ArrowDownRight, ArrowUpRight, Activity, Wallet, X, FileText, Clock 
+    ArrowLeft, Trash2, Edit3, Download, ArrowDownRight, ArrowUpRight, Activity, Wallet, X, FileText, Clock, Star 
 } from 'lucide-react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
@@ -99,13 +99,32 @@ const FolderDetails = () => {
         }
     };
 
-    // Chart Data
+    // --- ENHANCED CHART DATA & STYLE ---
     const chartData = [
         { name: 'Income', value: transactions.filter(t => t.type === 'income').reduce((a, t) => a + t.amount, 0), color: '#10b981' },
         { name: 'Expense', value: transactions.filter(t => t.type === 'expense').reduce((a, t) => a + t.amount, 0), color: '#ef4444' },
         { name: 'Invest', value: transactions.filter(t => t.type === 'investment').reduce((a, t) => a + t.amount, 0), color: '#8b5cf6' },
         { name: 'Savings', value: transactions.filter(t => t.type === 'savings').reduce((a, t) => a + t.amount, 0), color: '#f59e0b' },
+        { name: 'Extra', value: transactions.filter(t => t.type === 'extra').reduce((a, t) => a + t.amount, 0), color: '#ec4899' },
     ].filter(d => d.value > 0);
+
+    // Calculate total for center text
+    const totalFolderValue = chartData.reduce((acc, item) => acc + item.value, 0);
+
+    // Custom Tooltip Component
+    const CustomTooltip = ({ active, payload }) => {
+        if (active && payload && payload.length) {
+            return (
+                <div className="bg-bg-secondary p-3 border border-border rounded-xl shadow-xl">
+                    <p className="text-sm font-bold text-text-primary mb-1">{payload[0].name}</p>
+                    <p className="text-sm font-mono font-bold" style={{ color: payload[0].payload.color }}>
+                        ${payload[0].value.toLocaleString()}
+                    </p>
+                </div>
+            );
+        }
+        return null;
+    };
 
     if (loading) return <div className="p-8 text-text-secondary">Loading...</div>;
 
@@ -119,25 +138,48 @@ const FolderDetails = () => {
             </button>
 
             <div className="flex flex-col lg:flex-row gap-8 mb-8">
-                {/* Left Info */}
+                {/* Left Info & Chart */}
                 <div className="lg:w-1/3 space-y-6">
                     <div>
                         <h2 className="text-3xl font-bold text-text-primary">{state?.folderName || 'Folder Details'}</h2>
                         <p className="text-text-secondary">{transactions.length} records found</p>
                     </div>
-                    <div className="bg-bg-secondary p-4 rounded-2xl border border-border h-64 shadow-sm">
-                        <h4 className="text-sm font-bold text-text-primary mb-2">Distribution</h4>
+                    
+                    {/* Improved Chart Container */}
+                    <div className="bg-bg-secondary p-6 rounded-2xl border border-border h-80 shadow-sm relative flex flex-col items-center justify-center">
+                        <h4 className="text-sm font-bold text-text-primary absolute top-4 left-4">Distribution</h4>
+                        
                         {chartData.length > 0 ? (
-                            <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
-                                    <Pie data={chartData} innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
-                                        {chartData.map((entry, index) => <Cell key={index} fill={entry.color} />)}
-                                    </Pie>
-                                    <Tooltip contentStyle={{ backgroundColor: 'var(--bg-secondary)', borderRadius: '8px', border: '1px solid var(--border-color)' }} />
-                                    <Legend verticalAlign="bottom" height={36}/>
-                                </PieChart>
-                            </ResponsiveContainer>
-                        ) : <div className="h-full flex items-center justify-center text-text-secondary text-sm">No data</div>}
+                            <div className="w-full h-full relative">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <PieChart>
+                                        <Pie 
+                                            data={chartData} 
+                                            innerRadius={70} 
+                                            outerRadius={90} 
+                                            paddingAngle={5} 
+                                            dataKey="value"
+                                            stroke="none"
+                                        >
+                                            {chartData.map((entry, index) => <Cell key={index} fill={entry.color} />)}
+                                        </Pie>
+                                        <Tooltip content={<CustomTooltip />} />
+                                        <Legend verticalAlign="bottom" height={36} iconType="circle" iconSize={8}/>
+                                    </PieChart>
+                                </ResponsiveContainer>
+                                
+                                {/* Center Text for Donut Chart */}
+                                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pb-8">
+                                    <span className="text-xs text-text-secondary">Total Volume</span>
+                                    <span className="text-xl font-bold text-text-primary">${totalFolderValue.toLocaleString()}</span>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="h-full flex flex-col items-center justify-center text-text-secondary opacity-50">
+                                <Activity size={48} className="mb-2"/>
+                                <p className="text-sm">No data to display</p>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -160,12 +202,22 @@ const FolderDetails = () => {
 
                     <div className="overflow-y-auto flex-1 custom-scrollbar p-2">
                         {activeTab === 'transactions' && (
-                            transactions.length === 0 ? <p className="text-center text-text-secondary mt-10">No transactions.</p> :
+                            transactions.length === 0 ? <p className="text-center text-text-secondary mt-10">No transactions yet.</p> :
                             transactions.map((t) => (
                                 <div key={t._id} className="flex flex-col md:flex-row justify-between items-start md:items-center p-4 border-b border-border last:border-0 hover:bg-bg-primary transition-colors group gap-3">
                                     <div className="flex items-center gap-4 w-full md:w-auto">
-                                        <div className={`p-3 rounded-xl shrink-0 ${t.type === 'income' ? 'bg-emerald-500/10 text-emerald-500' : t.type === 'expense' ? 'bg-red-500/10 text-red-500' : t.type === 'savings' ? 'bg-amber-500/10 text-amber-500' : 'bg-violet-500/10 text-violet-500'}`}>
-                                            {t.type === 'income' ? <ArrowDownRight size={20} /> : t.type === 'expense' ? <ArrowUpRight size={20} /> : t.type === 'savings' ? <Wallet size={20} /> : <Activity size={20} />}
+                                        <div className={`p-3 rounded-xl shrink-0 ${
+                                            t.type === 'income' ? 'bg-emerald-500/10 text-emerald-500' : 
+                                            t.type === 'expense' ? 'bg-red-500/10 text-red-500' : 
+                                            t.type === 'savings' ? 'bg-amber-500/10 text-amber-500' : 
+                                            t.type === 'extra' ? 'bg-pink-500/10 text-pink-500' :
+                                            'bg-violet-500/10 text-violet-500'
+                                        }`}>
+                                            {t.type === 'income' ? <ArrowDownRight size={20} /> : 
+                                             t.type === 'expense' ? <ArrowUpRight size={20} /> : 
+                                             t.type === 'savings' ? <Wallet size={20} /> : 
+                                             t.type === 'extra' ? <Star size={20} /> :
+                                             <Activity size={20} />}
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <p className="text-text-primary font-bold truncate">{t.description}</p>
@@ -173,9 +225,11 @@ const FolderDetails = () => {
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
-                                        <span className={`font-bold text-lg ${t.type === 'income' || t.type === 'savings' ? 'text-emerald-500' : 'text-text-primary'}`}>${t.amount.toLocaleString()}</span>
-                                        <div className="flex gap-1">
-                                            {['investment', 'savings', 'income'].includes(t.type) && (
+                                        <span className={`font-bold text-lg ${['income', 'savings', 'extra'].includes(t.type) ? 'text-emerald-500' : 'text-text-primary'}`}>
+                                            ${t.amount.toLocaleString()}
+                                        </span>
+                                        <div className="flex gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
+                                            {['investment', 'savings', 'income', 'extra'].includes(t.type) && (
                                                 <button 
                                                     onClick={() => { setWithdrawTx(t); setWithdrawAmount(''); }} 
                                                     title="Withdraw/Transfer" 
@@ -208,8 +262,16 @@ const FolderDetails = () => {
                             history.length === 0 ? <p className="text-center text-text-secondary mt-10">No history logs.</p> :
                             history.map((log) => (
                                 <div key={log._id} className="flex gap-4 p-4 border-b border-border last:border-0 hover:bg-bg-primary transition-colors">
-                                    <div className={`p-2 h-fit rounded-full mt-1 shrink-0 ${log.action === 'CREATE' ? 'bg-emerald-500/10 text-emerald-500' : log.action === 'DELETE' ? 'bg-red-500/10 text-red-500' : log.action === 'EDIT' ? 'bg-blue-500/10 text-blue-500' : 'bg-amber-500/10 text-amber-500'}`}>
-                                        {log.action === 'CREATE' ? <ArrowDownRight size={16} /> : log.action === 'DELETE' ? <Trash2 size={16} /> : log.action === 'EDIT' ? <Edit3 size={16} /> : <Download size={16} />}
+                                    <div className={`p-2 h-fit rounded-full mt-1 shrink-0 ${
+                                        log.action === 'CREATE' ? 'bg-emerald-500/10 text-emerald-500' : 
+                                        log.action === 'DELETE' ? 'bg-red-500/10 text-red-500' : 
+                                        log.action === 'EDIT' ? 'bg-blue-500/10 text-blue-500' : 
+                                        'bg-amber-500/10 text-amber-500'
+                                    }`}>
+                                        {log.action === 'CREATE' ? <ArrowDownRight size={16} /> : 
+                                         log.action === 'DELETE' ? <Trash2 size={16} /> : 
+                                         log.action === 'EDIT' ? <Edit3 size={16} /> : 
+                                         <Download size={16} />}
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <p className="text-text-primary text-sm font-medium break-words">{log.description}</p>
@@ -254,6 +316,7 @@ const FolderDetails = () => {
                                 {withdrawTx.type === 'investment' && "💰 Money will move to Savings."}
                                 {withdrawTx.type === 'savings' && "🛒 Money will be recorded as an Expense."}
                                 {withdrawTx.type === 'income' && "💵 Money will move to Savings."}
+                                {withdrawTx.type === 'extra' && "✨ Money will move to Savings."}
                             </div>
 
                             <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-bold mt-2 shadow-lg shadow-emerald-500/20 transition-all active:scale-95">
@@ -297,6 +360,7 @@ const FolderDetails = () => {
                                     <option value="income">Income</option>
                                     <option value="savings">Savings</option>
                                     <option value="investment">Investment</option>
+                                    <option value="extra">Extra</option>
                                 </select>
                             </div>
                             <div>

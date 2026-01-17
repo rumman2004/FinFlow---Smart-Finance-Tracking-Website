@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const transactionSchema = mongoose.Schema({
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     folder: { type: mongoose.Schema.Types.ObjectId, ref: 'Folder', required: true },
-    type: { type: String, enum: ['income', 'expense', 'investment', 'savings'], required: true },
+    type: { type: String, enum: ['income', 'expense', 'investment', 'savings', 'extra'], required: true },
     amount: { type: Number, required: true },
     description: { type: String, required: true },
     date: { type: Date, default: Date.now },

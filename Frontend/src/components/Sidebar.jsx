@@ -19,7 +19,7 @@ const Sidebar = ({ isOpen, toggleSidebar, logout, isMobile }) => {
             <div className="h-16 flex items-center justify-center border-b border-border relative shrink-0">
                 <div className={`transition-all duration-300 ${isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-90 hidden'}`}>
                     <h1 className="text-2xl font-bold text-blue-500 flex items-center gap-2">
-                        FinFlow <span className="text-xs text-white bg-blue-600 px-2 py-0.5 rounded-full">PRO</span>
+                        FinFlow 
                     </h1>
                 </div>
                 
@@ -31,7 +31,7 @@ const Sidebar = ({ isOpen, toggleSidebar, logout, isMobile }) => {
                 {!isMobile && (
                     <button 
                         onClick={toggleSidebar}
-                        className="absolute -right-3 top-6 bg-bg-secondary border border-border rounded-full p-1 text-text-secondary hover:text-blue-500 shadow-sm z-50 cursor-pointer hover:shadow-md transition-all"
+                        className="absolute -right-0.5 top-6 bg-bg-secondary border border-border rounded-full p-1 text-text-secondary hover:text-blue-500 shadow-sm z-50 cursor-pointer hover:shadow-md transition-all"
                     >
                         {isOpen ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}
                     </button>

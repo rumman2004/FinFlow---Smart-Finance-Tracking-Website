@@ -48,7 +48,15 @@ const Folders = () => {
                     >
                         <div className="flex justify-between items-start mb-4">
                             <div className="p-3 bg-blue-500/10 rounded-lg text-blue-400"><Wallet size={24} /></div>
-                            <button onClick={(e) => handleDelete(e, folder._id)} className="text-text-secondary hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"><Trash2 size={18} /></button>
+                            
+                            {/* UPDATED BUTTON: Visible on mobile (opacity-100), Hidden on desktop until hover */}
+                            <button 
+                                onClick={(e) => handleDelete(e, folder._id)} 
+                                className="text-text-secondary hover:text-red-400 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100 p-2"
+                                aria-label="Delete folder"
+                            >
+                                <Trash2 size={18} />
+                            </button>
                         </div>
                         <h3 className="text-xl font-bold text-text-primary mb-1">{folder.name}</h3>
                         <p className="text-xs text-text-secondary">Click to view details</p>
